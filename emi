@@ -1,0 +1,125 @@
+<template>
+  <div class="emi-calculator">
+    <h2>Loan EMI Calculator</h2>
+
+    <div class="input-group">
+      <label for="principal">Principal Amount ($):</label>
+      <input type="number" v-model="principal" id="principal" placeholder="Enter principal amount" />
+    </div>
+
+    <div class="input-group">
+      <label for="interestRate">Interest Rate (%):</label>
+      <input type="number" v-model="interestRate" id="interestRate" placeholder="Enter interest rate" />
+    </div>
+
+    <div class="input-group">
+      <label for="tenure">Loan Tenure (Months):</label>
+      <input type="number" v-model="tenure" id="tenure" placeholder="Enter loan tenure in months" />
+    </div>
+
+    <button @click="calculateEMI">Calculate EMI</button>
+
+    <div v-if="emi">
+      <h3>Loan Details</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Installment</th>
+            <th>EMI</th>
+            <th>Interest</th>
+            <th>Principal</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(installment, index) in loanSchedule" :key="index">
+            <td>{{ index + 1 }}</td>
+            <td>${{ installment.emi.toFixed(2) }}</td>
+            <td>${{ installment.interest.toFixed(2) }}</td>
+            <td>${{ installment.principal.toFixed(2) }}</td>
+            <td>${{ installment.balance.toFixed(2) }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="chart-container">
+        <!-- Add your pie chart component here -->
+        <!-- Example: <PieChart :data="chartData" /> -->
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      principal: null,
+      interestRate: null,
+      tenure: null,
+      emi: null,
+      loanSchedule: []
+    };
+  },
+  methods: {
+    calculateEMI() {
+      const p = parseFloat(this.principal);
+      const r = parseFloat(this.interestRate) / 100 / 12; // Monthly interest rate
+      const n = parseFloat(this.tenure);
+
+      let balance = p;
+      let emi, interest, principal;
+      let totalInterest = 0;
+      let totalPayable = 0;
+      const loanSchedule = [];
+
+      for (let i = 0; i < n; i++) {
+        interest = balance * r;
+        principal = this.emi - interest;
+        balance -= principal;
+
+        totalInterest += interest;
+        totalPayable += this.emi;
+
+        loanSchedule.push({
+          emi: this.emi,
+          interest: interest,
+          principal: principal,
+          balance: balance
+        });
+      }
+
+      this.loanSchedule = loanSchedule;
+      this.emi = totalPayable / n; // Average EMI
+    }
+  }
+};
+</script>
+
+<style scoped>
+/* Add your styling for the table and chart container here */
+.table-container {
+  margin-top: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+.chart-container {
+  /* Add your styling for the chart container here */
+  margin-top: 20px;
+}
+</style>
